@@ -1,0 +1,33 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+int getNodeIndex(int a, int r);
+
+int numAvenidas, numRuas, numSupermercados, numCidadaos;
+
+int main(){
+	int i, j, k;
+	int **matriz;
+
+	scanf("%d %d", &numAvenidas, &numRuas);
+	matriz = (int **) malloc(sizeof()(numRuas*numAvenidas + 2));
+	for(i = 0; i < numAvenidas*numRuas + 2; i++){
+		matriz[i] = (int *) malloc(numAvenidas*numRuas * sizeof(int));
+		matriz[i][i] = 0;
+	}
+
+	scanf("%d %d", &numSupermercados, &numCidadaos);
+
+	return 0;
+}
+
+int getNodeIndex(int a, int r){
+	/*
+	3  6  9
+
+	2  5  8
+
+	1  4  7
+	*/
+	return (r-1)*3 + 1 + a - 1;
+}

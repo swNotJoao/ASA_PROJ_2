@@ -1,0 +1,23 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+int numAvenidas, numRuas, numSupermercados, numCidadaos;
+
+int main(){
+	int i, j, k;
+	int **matriz;
+
+	scanf("%d %d", &numAvenidas, &numRuas);
+	matriz = (int **) malloc((numRuas*numAvenidas + 2) * sizeof(int*));
+	for(i = 0; i < numAvenidas*numRuas + 2; i++){
+		matriz[i] = (int *) malloc(numAvenidas*numRuas * sizeof(int));
+		for(j = 0; j < numAvenidas*numRuas + 2; j++){
+			matriz[i][j] = 1;
+		}
+		matriz[i][i] = 0;
+	}
+
+	scanf("%d %d", &numSupermercados, &numCidadaos);
+
+	return 0;
+}
