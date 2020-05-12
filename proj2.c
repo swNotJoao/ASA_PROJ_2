@@ -3,20 +3,21 @@
 #include <string.h>
 
 void buildGraph();
-int getNodeIndex(int a, int r);
+unsigned int getNodeIndex(int a, int r);
 
 typedef struct node node_t;
 typedef struct node{
-  char visited;
-  int nVizinhos;
+  unsigned char visited;
+
+  unsigned int nVizinhos;
   node_t **vizinhos;
 } node_t;
 
 unsigned int numAvenidas, numRuas, numSupermercados, numCidadaos;
+unsigned int graphSize = 2;
 node_t *graph, uSource, uSink;
 
 int main(){
-  int graphSize = 2;
   int i, j, k, x, y;
 
   scanf("%d %d", &numAvenidas, &numRuas);
@@ -33,26 +34,27 @@ int main(){
 
 	}
 
+  /*Will need this*/
+  /*if(graph[i].nVizinhos % 32 == 0)
+    graph[i].vizinhos = realloc(graph[i].vizinhos, sizeof(node_t*)*(graph[i].nVizinhos + 32));*/
+
   return 0;
 }
 
 void buildGraph(){
   int offsets[] = {-1, -3, 1, 3};
-  int i, j, size = numAvenidas * numRuas;
+  int i, j;
 
   if(uSource.vizinhos == NULL)
-    uSource.vizinhos = (node_t *) calloc(32, sizeof(node_t));
+    uSource.vizinhos = (node_t *) calloc(32, sizeof(node_t *));
   if(uSink.vizinhos == NULL)
-    uSink.vizinhos = (node_t *) calloc(32, sizeof(node_t));
+    uSink.vizinhos = (node_t *) calloc(32, sizeof(node_t *));
 
   for(i = 0; i < numAvenidas * numRuas; i++){
 		for(j = 0; j < 4; j++){
 			if(i + offsets[j] >= 0 && i + offsets[j] <= numAvenidas * numRuas - 1){
 				if(graph[i].vizinhos == NULL)
-          graph[i].vizinhos = (node_t *) calloc(32, sizeof(node_t));
-
-        if(graph[i].nVizinhos % 32 == 0)
-          graph[i].vizinhos = realloc(graph[i].vizinhos, sizeof(node_t*)*(graph[i].nVizinhos + 32));
+          graph[i].vizinhos = (node_t *) calloc(32, sizeof(node_t *));
 
         graph[i].vizinhos[graph[i].nVizinhos++] = graph[i + offsets[j]];
 			}
@@ -60,7 +62,7 @@ void buildGraph(){
 	}
 }
 
-int getNodeIndex(int a, int r){
+unsigned int getNodeIndex(int a, int r){
 	/*
 	6  3  0
 
