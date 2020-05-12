@@ -3,16 +3,16 @@
 #include <string.h>
 
 int getNodeIndex(int a, int r);
-void addLinks(int **matriz);
-int fordFulkerson(int **matriz, int source, int sink);
-int bfs(int **matrizResidual, int uSource, int uSink, int *path);
+void addLinks(char **matriz);
+int fordFulkerson(char **matriz, int source, int sink);
+int bfs(char **matrizResidual, int uSource, int uSink, char *path);
 
 int numAvenidas, numRuas, numSupermercados, numCidadaos;
 int uSource, uSink;
 
 int i, j, k, ignoreThis;
 int x,y;
-int **matriz;
+char **matriz;
 
 int main(){
 	ignoreThis = scanf("%d %d", &numAvenidas, &numRuas);
@@ -20,9 +20,9 @@ int main(){
 	uSink = numAvenidas*numRuas*2 + 1;
 
 	/* Construir matriz e suas ligacoes */
-	matriz = (int **) calloc(numRuas*numAvenidas*2 + 4, sizeof(int*));
+	matriz = (char **) calloc(numRuas*numAvenidas*2 + 4, sizeof(char*));
 	for(i = 0; i < numAvenidas*numRuas*2 + 4; i++){
-		matriz[i] = (int *) calloc(numAvenidas*numRuas*2 + 4, sizeof(int));
+		matriz[i] = (char *) calloc(numAvenidas*numRuas*2 + 4, sizeof(char));
 	}
 	addLinks(matriz);
 
@@ -78,7 +78,7 @@ int getNodeIndex(int a, int r){
 	return (r-1)*numAvenidas + a - 1;
 }
 
-void addLinks(int **matriz){
+void addLinks(char **matriz){
 	/* Colocar a 1 ligacoes por avenidas e ruas */
 	/*int offsets[] = {-1, numAvenidas, 1, -numAvenidas};*/
 	int offsets[][2] = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
@@ -112,14 +112,14 @@ void addLinks(int **matriz){
 	}
 }
 
-int fordFulkerson(int **matriz, int source, int sink){
+int fordFulkerson(char **matriz, int source, int sink){
 	int maxFlow = 0;
-	int **matrizResidual;
-	int path[numAvenidas*numRuas*2 + 4];
+	char **matrizResidual;
+	char path[numAvenidas*numRuas*2 + 4];
 
-	matrizResidual = (int **) calloc(numRuas*numAvenidas*2 + 4, sizeof(int*));
+	matrizResidual = (char **) calloc(numRuas*numAvenidas*2 + 4, sizeof(char*));
   for(i = 0; i < numAvenidas*numRuas*2 + 4; i++){
-          matrizResidual[i] = (int *) calloc(numAvenidas*numRuas*2 + 4, sizeof(int));
+          matrizResidual[i] = (char *) calloc(numAvenidas*numRuas*2 + 4, sizeof(char));
   }
 
 	for(i = 0; i < numAvenidas*numRuas*2 + 4; i++)
@@ -148,9 +148,10 @@ int fordFulkerson(int **matriz, int source, int sink){
 	return maxFlow;
 }
 
-int bfs(int **matrizResidual, int uSource, int uSink, int *path){
-	int visited[numAvenidas*numRuas*2 + 4];
-	int queue[numAvenidas*numRuas*2 + 4], qptr = 0;
+int bfs(char **matrizResidual, int uSource, int uSink, char *path){
+	char visited[numAvenidas*numRuas*2 + 4];
+	char queue[numAvenidas*numRuas*2 + 4];
+	int qptr = 0;
 	memset(visited, 0, sizeof(visited));
 	memset(queue, -1, sizeof(queue));
 
