@@ -33,13 +33,13 @@ int main(){
 		ignoreThis = scanf("%d %d", &x, &y);
 
 		matriz[uSink][uSink+2]++;
-		matriz[uSink+2][uSink]++;
+		/*matriz[uSink+2][uSink]++;*/
 
 		matriz[uSink+2][getNodeIndex(x,y)] = 1;
 		/*matriz[getNodeIndex(x,y)][uSink+2] = 1;*/
 
 		matriz[getNodeIndex(x,y)][getNodeIndex(x,y)+numRuas*numAvenidas] = 1;
-		matriz[getNodeIndex(x,y) +numRuas*numAvenidas][getNodeIndex(x,y)] = 1;
+		/*matriz[getNodeIndex(x,y) +numRuas*numAvenidas][getNodeIndex(x,y)] = 1;*/
 
 		matriz[getNodeIndex(x,y) +numRuas*numAvenidas][uSink] = 1;
 		/*matriz[uSink][getNodeIndex(x,y) +numRuas*numAvenidas] = 1;*/
@@ -50,13 +50,13 @@ int main(){
     	ignoreThis = scanf("%d %d", &x, &y);
 
 			matriz[uSource][uSource+2]++;
-			matriz[uSource+2][uSource]++;
+			/*matriz[uSource+2][uSource]++;*/
 
 			matriz[uSource+2][getNodeIndex(x,y)] = 1;
 			/*matriz[getNodeIndex(x,y)][uSource+2] = 1;*/
 
 			matriz[getNodeIndex(x,y)][getNodeIndex(x,y)+numRuas*numAvenidas] = 1;
-			matriz[getNodeIndex(x,y) +numRuas*numAvenidas][getNodeIndex(x,y)] = 1;
+			/*matriz[getNodeIndex(x,y) +numRuas*numAvenidas][getNodeIndex(x,y)] = 1;*/
 
 			matriz[getNodeIndex(x,y) +numRuas*numAvenidas][uSource] = 1;
 			/*matriz[uSource][getNodeIndex(x,y) +numRuas*numAvenidas] = 1;*/
@@ -96,13 +96,13 @@ void addLinks(int **matriz){
 					/*printf("NO: %d; Vixinho %d\n", tmpNo, tmpVizinho);*/
 
 					matriz[tmpNo][tmpNo + size] = 1;
-					matriz[tmpNo+size][i] = 1;
+					/*matriz[tmpNo+size][i] = 1;*/
 
 					matriz[tmpNo+size][tmpVizinho] = 1;
-					/*matriz[i + offsets[j]][i+size] = 1;*/
+					/*matriz[tmpVizinho][i+size] = 1;*/
 
 					matriz[tmpVizinho][tmpVizinho+size] = 1;
-					matriz[tmpVizinho+size][tmpVizinho] = 1;
+					/*matriz[tmpVizinho+size][tmpVizinho] = 1;*/
 
 					matriz[tmpVizinho+size][tmpNo] = 1;
 					/*matriz[i][i+offsets[j]+size] = 1;*/
