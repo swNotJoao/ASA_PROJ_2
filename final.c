@@ -34,32 +34,24 @@ int main(){
 
 		matriz[uSink][uSink+2]++;
 		matriz[uSink+2][uSink]++;
-		/*matriz[getNodeIndex(x,y)][uSink+2] = 1;*/
 		matriz[uSink+2][getNodeIndex(x,y)] = 1;
 		/*matriz[getNodeIndex(x,y)][uSink+2] = 1;*/
+		matriz[getNodeIndex(x,y)][getNodeIndex(x,y)+numRuas*numAvenidas] = 1;
 		matriz[getNodeIndex(x,y) +numRuas*numAvenidas][getNodeIndex(x,y)] = 1;
-		matriz[getNodeIndex(x,y)][getNodeIndex(x,y) +numRuas*numAvenidas] = 1;
 		matriz[getNodeIndex(x,y) +numRuas*numAvenidas][uSink] = 1;
-
-		/*matriz[uSink][getNodeIndex(x,y)] = 1;
-		matriz[getNodeIndex(x, y)][uSink] = 1;*/
 	}
 
 	/* Criar source universal */
 	for(i = 0; i < numCidadaos; i++){
     		scanf("%d %d", &x, &y);
 
-		matriz[uSource][uSource+2]++;
-		matriz[uSource+2][uSource]++;
-		/*matriz[getNodeIndex(x,y)][uSource+2] = 1;*/
-		matriz[uSource+2][getNodeIndex(x,y)] = 1;
-		matriz[getNodeIndex(x,y)][uSource+2] = 1;
-		matriz[getNodeIndex(x,y) +numRuas*numAvenidas][getNodeIndex(x,y)] = 1;
-		matriz[getNodeIndex(x,y)][getNodeIndex(x,y) +numRuas*numAvenidas] = 1;
-		matriz[getNodeIndex(x,y) +numRuas*numAvenidas][uSource] = 1;
-
-		/*matriz[uSource][getNodeIndex(x,y)] = 1;
-    		matriz[getNodeIndex(x, y)][uSource] = 1;*/
+			matriz[uSource][uSource+2]++;
+			matriz[uSource+2][uSource]++;
+			matriz[uSource+2][getNodeIndex(x,y)] = 1;
+			/*matriz[getNodeIndex(x,y)][uSource+2] = 1;*/
+			matriz[getNodeIndex(x,y)][getNodeIndex(x,y)+numRuas*numAvenidas] = 1;
+			matriz[getNodeIndex(x,y) +numRuas*numAvenidas][getNodeIndex(x,y)] = 1;
+			matriz[getNodeIndex(x,y) +numRuas*numAvenidas][uSource] = 1;
   }
 
 	printf("%d\n", fordFulkerson(matriz, uSource, uSink));
@@ -75,7 +67,7 @@ int getNodeIndex(int a, int r){
 
 	8  5  2
 	*/
-	return (r-1)*3 + a - 1;
+	return (r-1)*numAvenidas + a - 1;
 }
 
 void addLinks(int **matriz){
@@ -85,13 +77,14 @@ void addLinks(int **matriz){
 
 	for(i = 0; i < numAvenidas * numRuas; i++){
 		for(j = 0; j < 4; j++){
-			if(i + offsets[j] >= 1 && i + offsets[j] <= numAvenidas * numRuas){
+			if(i + offsets[j] >= 0 && i + offsets[j] <= numAvenidas * numRuas - 1){
 				matriz[i][i + size] = 1;
 				matriz[i+size][i] = 1;
 				matriz[i+size][i + offsets[j]] = 1;
 				/*matriz[i + offsets[j]][i+size] = 1;*/
 				matriz[i+offsets[j]][i+offsets[j]+size] = 1;
 				matriz[i+offsets[j]+size][i+offsets[j]] = 1;
+				matriz[i+offsets[j]+size][i] = 1;
 			}
 		}
 	}
@@ -103,9 +96,9 @@ int fordFulkerson(int **matriz, int source, int sink){
 	int path[numAvenidas*numRuas*2 + 4];
 
 	matrizResidual = (int **) calloc(numRuas*numAvenidas*2 + 4, sizeof(int*));
-        for(i = 0; i < numAvenidas*numRuas*2 + 4; i++){
-                matrizResidual[i] = (int *) calloc(numAvenidas*numRuas*2 + 4, sizeof(int));
-        }
+  for(i = 0; i < numAvenidas*numRuas*2 + 4; i++){
+          matrizResidual[i] = (int *) calloc(numAvenidas*numRuas*2 + 4, sizeof(int));
+  }
 
 	for(i = 0; i < numAvenidas*numRuas*2 + 4; i++)
                 for(j = 0; j < numAvenidas*numRuas*2 + 4; j++)
@@ -122,10 +115,10 @@ int fordFulkerson(int **matriz, int source, int sink){
 		}
 
 		for(i = uSink; i != uSource; i = path[i]){
-                        k = path[i];
-                        matrizResidual[k][i] = matrizResidual[k][i] - pathFlow;
+      k = path[i];
+      matrizResidual[k][i] = matrizResidual[k][i] - pathFlow;
 			matrizResidual[i][k] = matrizResidual[i][k] + pathFlow;
-                }
+    }
 
 		maxFlow = maxFlow + pathFlow;
 	}

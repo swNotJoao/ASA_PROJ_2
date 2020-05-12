@@ -55,7 +55,7 @@ int getNodeIndex(int a, int r){
 
 	8  5  2
 	*/
-	return (r-1)*3 + a - 1;
+	return (r-1)*numAvenidas + a - 1;
 }
 
 void addLinks(int **matriz){
