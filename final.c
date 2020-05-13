@@ -5,7 +5,7 @@
 int getNodeIndex(int a, int r);
 void addLinks(char **matriz);
 int fordFulkerson(char **matriz, int source, int sink);
-int bfs(char **matrizResidual, int uSource, int uSink, char *path);
+int bfs(char **matriz, int uSource, int uSink, char *path);
 
 int numAvenidas, numRuas, numSupermercados, numCidadaos;
 int uSource, uSink;
@@ -114,32 +114,22 @@ void addLinks(char **matriz){
 
 int fordFulkerson(char **matriz, int source, int sink){
 	int maxFlow = 0;
-	char **matrizResidual;
 	char path[numAvenidas*numRuas*2 + 4];
 
-	matrizResidual = (char **) calloc(numRuas*numAvenidas*2 + 4, sizeof(char*));
-  for(i = 0; i < numAvenidas*numRuas*2 + 4; i++){
-          matrizResidual[i] = (char *) calloc(numAvenidas*numRuas*2 + 4, sizeof(char));
-  }
-
-	for(i = 0; i < numAvenidas*numRuas*2 + 4; i++)
-                for(j = 0; j < numAvenidas*numRuas*2 + 4; j++)
-                        matrizResidual[i][j] = matriz[i][j];
-
-	while(bfs(matrizResidual, source, sink, path)){
+	while(bfs(matriz, source, sink, path)){
 		int pathFlow = 100000;
 
 		for(i = uSink; i != uSource; i = path[i]){
 			k = path[i];
-			if(matrizResidual[k][i] < pathFlow){
-				pathFlow = matrizResidual[k][i];
+			if(matriz[k][i] < pathFlow){
+				pathFlow = matriz[k][i];
 			}
 		}
 
 		for(i = uSink; i != uSource; i = path[i]){
       k = path[i];
-      matrizResidual[k][i] = matrizResidual[k][i] - pathFlow;
-			matrizResidual[i][k] = matrizResidual[i][k] + pathFlow;
+      matriz[k][i] = matriz[k][i] - pathFlow;
+			matriz[i][k] = matriz[i][k] + pathFlow;
     }
 
 		maxFlow = maxFlow + pathFlow;
@@ -148,7 +138,7 @@ int fordFulkerson(char **matriz, int source, int sink){
 	return maxFlow;
 }
 
-int bfs(char **matrizResidual, int uSource, int uSink, char *path){
+int bfs(char **matriz, int uSource, int uSink, char *path){
 	char visited[numAvenidas*numRuas*2 + 4];
 	char queue[numAvenidas*numRuas*2 + 4];
 	int qptr = 0;
@@ -166,7 +156,7 @@ int bfs(char **matrizResidual, int uSource, int uSink, char *path){
 		qptr--;
 
 		for(i = 0; i < numAvenidas*numRuas*2 + 4; i++){
-			if(visited[i] == 0 && matrizResidual[k][i] > 0){
+			if(visited[i] == 0 && matriz[k][i] > 0){
 				queue[qptr] = i;
 				qptr++;
 				path[i] = k;
