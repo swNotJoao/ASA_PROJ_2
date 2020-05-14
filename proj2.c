@@ -2,11 +2,20 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef struct node node_t;
+typedef struct vizinho vizinho_t;
+
+typedef struct vizinho{
+  unsigned int flow;
+  struct node *dest;
+
+} vizinho_t;
+
 typedef struct node{
   unsigned char visited;
 
   unsigned int nVizinhos;
-  struct node **vizinhos;
+  struct vizinho **vizinhos;
 } node_t;
 
 void buildGraph();
