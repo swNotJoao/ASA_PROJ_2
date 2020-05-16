@@ -93,7 +93,7 @@ void addLinks(char **matriz){
 				tmpVizinho = getNodeIndex(i + offsets[k][0], j + offsets[k][1]);
 				if(tmpVizinho >= 0 && tmpVizinho <= numAvenidas * numRuas - 1){
 					/*printf("i:%d j:%d; iv:%d jv:%d\n", i, j, offsets[k][0], offsets[k][1]);*/
-					/*printf("NO: %d; Vixinho %d\n", tmpNo, tmpVizinho);*/
+					printf("NO: %d; Vixinho %d\n", tmpNo, tmpVizinho);
 
 					matriz[tmpNo][tmpNo + size] = 1;
 					/*matriz[tmpNo+size][i] = 1;*/

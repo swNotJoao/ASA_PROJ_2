@@ -2,40 +2,47 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct node node_t;
-typedef struct vizinho vizinho_t;
+struct node;
+struct vizinho;
 
 typedef struct vizinho{
   unsigned int flow;
+  unsigned int rflow;
   struct node *dest;
 
-} vizinho_t;
+}vizinho_t;
 
 typedef struct node{
-  unsigned char visited;
+  unsigned int visited;
+  int id;
 
   unsigned int nVizinhos;
-  struct vizinho **vizinhos;
-} node_t;
+  struct vizinho *vizinhos;
+}node_t;
 
 void buildGraph();
 unsigned int getNodeIndex(int a, int r);
 int fordFulkerson();
-int bfs(node_t *uSource, node_t *uSink, node_t **path);
+int dfs(node_t *node);
+void dfs_visit(node_t *node);
 
 void allocateNeighbor(node_t *graph, int index);
 void checkIfReallocNeeded(node_t in, node_t out, int index);
 
-unsigned int numAvenidas, numRuas, numSupermercados, numCidadaos;
-unsigned int graphSize, pathPtr;
+int numAvenidas, numRuas, numSupermercados, numCidadaos;
+int graphSize;
+int ignoreThis;
 node_t *graphIn, *graphOut, uSourceIn, uSourceOut, uSinkIn, uSinkOut;
+vizinho_t **path;
+int pathPtr = 0;
+int nVisisited = 0;
 
 int main(){
-  int i, j, k, x, y, tmpNo;
+  int i,x, y, tmpNo;
 
-  scanf("%d %d", &numAvenidas, &numRuas);
+  ignoreThis = scanf("%d %d", &numAvenidas, &numRuas);
   graphSize += numAvenidas * numRuas;
-  scanf("%d %d", &numSupermercados, &numCidadaos);
+  ignoreThis = scanf("%d %d", &numSupermercados, &numCidadaos);
   graphSize += numSupermercados + numCidadaos;
 
   graphIn = (node_t *) calloc(graphSize, sizeof(node_t));
@@ -44,28 +51,50 @@ int main(){
 
   /* Criar sink universal */
 	for(i = 0; i < numSupermercados; i++){
-		scanf("%d %d", &x, &y);
+		ignoreThis = scanf("%d %d", &x, &y);
     tmpNo = getNodeIndex(x, y);
 
     checkIfReallocNeeded(uSinkIn, uSinkOut, tmpNo);
 
-    graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos++] = &graphOut[tmpNo];
-    graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++] = &uSinkIn;
-    uSinkIn.vizinhos[uSinkIn.nVizinhos++] = &uSinkOut;
-    uSinkOut.vizinhos[uSinkOut.nVizinhos++] = &graphIn[tmpNo];
+    graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos].dest = &graphOut[tmpNo];
+    graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos++].flow = 1;
+    graphIn[tmpNo].id = tmpNo;
+
+    graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos].dest = &uSinkIn;
+    graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++].flow = 1;
+    graphOut[tmpNo].id = -tmpNo;
+
+    uSinkIn.vizinhos[uSinkIn.nVizinhos].dest = &uSinkOut;
+    uSinkIn.vizinhos[uSinkIn.nVizinhos++].flow++;
+    uSinkIn.id = -99;
+
+    uSinkOut.vizinhos[uSinkOut.nVizinhos].dest = &graphIn[tmpNo];
+    uSinkOut.vizinhos[uSinkOut.nVizinhos++].flow = 1;
+    uSinkOut.id = -98;
 	}
 
   /* Criar source universal */
-  for(i = 0; i < numSupermercados; i++){
-		scanf("%d %d", &x, &y);
+  for(i = 0; i < numCidadaos; i++){
+		ignoreThis = scanf("%d %d", &x, &y);
     tmpNo = getNodeIndex(x, y);
 
     checkIfReallocNeeded(uSourceIn, uSourceOut, tmpNo);
 
-    uSourceIn.vizinhos[uSourceIn.nVizinhos++] = &uSinkOut;
-    uSourceOut.vizinhos[uSourceOut.nVizinhos++] = &graphIn[tmpNo];
-    graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos++] = &graphOut[tmpNo];
-    graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++] = &uSourceOut;
+    uSourceIn.vizinhos[uSourceIn.nVizinhos].dest = &uSourceOut;
+    uSourceIn.vizinhos[uSourceIn.nVizinhos++].flow++;
+    uSourceIn.id = -89;
+
+    uSourceOut.vizinhos[uSourceOut.nVizinhos].dest = &graphIn[tmpNo];
+    uSourceOut.vizinhos[uSourceOut.nVizinhos++].flow = 1;
+    uSourceOut.id = -88;
+
+    graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos].dest = &graphOut[tmpNo];
+    graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos++].flow = 1;
+    graphIn[tmpNo].id = tmpNo;
+
+    graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos].dest = &uSourceIn;
+    graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++].flow = 1;
+    graphOut[tmpNo].id = -tmpNo;
 	}
 
   printf("%d\n", fordFulkerson());
@@ -75,32 +104,32 @@ int main(){
 
 void allocateNeighbor(node_t *graph, int index){
     if(graph[index].vizinhos == NULL)
-        graph[index].vizinhos = (node_t **) calloc(32, sizeof(node_t *));
+        graph[index].vizinhos = (vizinho_t *) calloc(32, sizeof(vizinho_t));
 }
 
 void checkIfReallocNeeded(node_t in, node_t out, int index) {
     if(in.nVizinhos % 32 == 0)
-        in.vizinhos = (node_t **) realloc(in.vizinhos, sizeof(node_t*)*(in.nVizinhos + 32));
+        in.vizinhos = (vizinho_t *) realloc(in.vizinhos, sizeof(vizinho_t)*(in.nVizinhos + 32));
     if(out.nVizinhos % 32 == 0)
-        out.vizinhos = (node_t **) realloc(out.vizinhos, sizeof(node_t*)*(out.nVizinhos + 32));
+        out.vizinhos = (vizinho_t *) realloc(out.vizinhos, sizeof(vizinho_t)*(out.nVizinhos + 32));
     if(graphIn[index].nVizinhos % 32 == 0)
-        graphIn[index].vizinhos = (node_t **) realloc(graphIn[index].vizinhos, sizeof(node_t*)*(graphIn[index].nVizinhos + 32));
+        graphIn[index].vizinhos = (vizinho_t *) realloc(graphIn[index].vizinhos, sizeof(vizinho_t)*(graphIn[index].nVizinhos + 32));
     if(graphOut[index].nVizinhos % 32 == 0)
-        graphOut[index].vizinhos = (node_t **) realloc(graphOut[index].vizinhos, sizeof(node_t*)*(graphOut[index].nVizinhos + 32));
+        graphOut[index].vizinhos = (vizinho_t *) realloc(graphOut[index].vizinhos, sizeof(vizinho_t)*(graphOut[index].nVizinhos + 32));
 }
 
 void buildGraph(){
   int offsets[][2] = {{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
-  int i, j, k, size = numAvenidas * numRuas, tmpVizinho, tmpNo;
+  int i, j, k, tmpVizinho, tmpNo;
 
   if(uSourceIn.vizinhos == NULL)
-    uSourceIn.vizinhos = (node_t **) calloc(32, sizeof(node_t *));
+    uSourceIn.vizinhos = (vizinho_t *) calloc(32, sizeof(vizinho_t));
   if(uSinkIn.vizinhos == NULL)
-    uSinkIn.vizinhos = (node_t **) calloc(32, sizeof(node_t *));
+    uSinkIn.vizinhos = (vizinho_t *) calloc(32, sizeof(vizinho_t));
   if(uSourceOut.vizinhos == NULL)
-    uSourceOut.vizinhos = (node_t **) calloc(32, sizeof(node_t *));
+    uSourceOut.vizinhos = (vizinho_t *) calloc(32, sizeof(vizinho_t));
   if(uSinkOut.vizinhos == NULL)
-    uSinkOut.vizinhos = (node_t **) calloc(32, sizeof(node_t *));
+    uSinkOut.vizinhos = (vizinho_t *) calloc(32, sizeof(vizinho_t));
 
 	for(i = 1; i <= numAvenidas; i++){
 		for(j = 1; j <= numRuas; j++){
@@ -118,13 +147,28 @@ void buildGraph(){
           allocateNeighbor(graphOut,tmpVizinho);
 
           /*  Ai -> Ao -> Bi -> Bo --|
-            ^____________________________________|
+            ^________________________|
                                                   */
           /*printf("NO: %d; VIXINHO: %d\n", tmpNo, tmpVizinho);*/
-          graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos++] = &graphOut[tmpNo];
-          graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++] = &graphIn[tmpVizinho];
-          graphIn[tmpVizinho].vizinhos[graphIn[tmpVizinho].nVizinhos++] = &graphOut[tmpVizinho];
-          graphOut[tmpVizinho].vizinhos[graphOut[tmpVizinho].nVizinhos++] = &graphIn[tmpNo];
+          graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos].dest = &graphOut[tmpNo];
+          graphIn[tmpNo].vizinhos[graphIn[tmpNo].nVizinhos++].flow = 1;
+          graphIn[tmpNo].id = tmpNo;
+
+
+          graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos].dest = &graphIn[tmpVizinho];
+          graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++].flow = 1;
+          graphOut[tmpNo].id = -tmpNo;
+
+          graphIn[tmpVizinho].vizinhos[graphIn[tmpVizinho].nVizinhos].dest = &graphOut[tmpVizinho];
+          graphIn[tmpVizinho].vizinhos[graphIn[tmpVizinho].nVizinhos++].flow = 1;
+          graphIn[tmpVizinho].id = tmpVizinho;
+
+          graphOut[tmpVizinho].vizinhos[graphOut[tmpVizinho].nVizinhos].dest = &graphIn[tmpNo];
+          graphOut[tmpVizinho].vizinhos[graphOut[tmpVizinho].nVizinhos++].flow = 1;
+          graphOut[tmpVizinho].id = -tmpVizinho;
+          /*gcc -O3 -ansi -Wall $file -lm*/
+
+
         }
       }
     }
@@ -143,35 +187,21 @@ unsigned int getNodeIndex(int a, int r){
 }
 
 int fordFulkerson(){
-	int maxFlow = 0;
-	node_t *path[graphSize*2+4];
-  node_t *node_i;
-  pathPtr = 0;
+	int maxFlow = 0, i;
+  path = (vizinho_t **) calloc(graphSize, sizeof(vizinho_t*));
 
-	while(bfs(&uSourceIn, &uSinkOut, path)){
-		int pathFlow = 100000;
+  printf("FORD FULKERSON\n");
 
-    printf("1)\n");
-
-		for(node_i = &uSinkOut; node_i != &uSourceIn; node_i = path[pathPtr]){
-      pathPtr--;
-      printf("%d\n", pathPtr);
-      printf("2)\n");
-			pathFlow = 1;
-		}
-
-		maxFlow = maxFlow + pathFlow;
-    pathPtr = 0;
+	while(dfs(&uSourceIn)){
+    printf("\n");
+		maxFlow++;
 	}
 
 	return maxFlow;
 }
 
-int bfs(node_t *uSource, node_t *uSink, node_t **path){
-	node_t *queue[graphSize*2+4];
-	int qptr = 0, i;
-	memset(queue, 0, sizeof(queue));
-
+int dfs(node_t *node){
+  int i;
   for(i = 0; i < graphSize; i++){
     graphIn[i].visited = 0;
     graphOut[i].visited = 0;
@@ -182,36 +212,43 @@ int bfs(node_t *uSource, node_t *uSink, node_t **path){
   uSinkIn.visited = 0;
   uSinkOut.visited = 0;
 
+  nVisisited = 0;
+  pathPtr = 0;
+  dfs_visit(node);
 
-  printf("BFS1)\n");
+  for(i = 0; i<pathPtr; i++){
+    printf("%d\n", path[i]->dest->id);
+    path[i]->flow--;
+    printf("%d\n", i);
+  }
 
-	queue[qptr] = &uSourceIn;
-	qptr++;
-	uSourceIn.visited = 1;
+  if(uSinkOut.visited)
+    return 1;
+  return 0;
+}
 
-  printf("BFS2)\n");
+void dfs_visit(node_t *node){
+  int i;
+  int v = 0;
+  node->visited = 1;
 
-	while(qptr != 0){
-    printf("BFSW)\n");
-		node_t *k = queue[qptr-1];
-		queue[qptr-1] = NULL;
-		qptr--;
+  for(i = 0; i < node->nVizinhos; i++){
+    /*printf("NO: %d | VIZINHO: %d\n", node->id, node->vizinhos[i].dest->id);*/
+    if(node->vizinhos[i].dest->visited == 0 && node->vizinhos[i].flow > 0){
+      printf("Valido\n");
+      v++;
+      nVisisited++;
+      path[pathPtr] = &(node->vizinhos[i]);
+      pathPtr++;
+      dfs_visit(node->vizinhos[i].dest);
+      /*printf("%d|", node->vizinhos[i].dest->id);*/
+      }
+    }
 
-		for(i = 0; i < k -> nVizinhos; i++){
-      printf("BFSWF)\n");
-			if(k->vizinhos[i]->visited == 0){
-        printf("BFSWFI)\n");
-				queue[qptr] = k->vizinhos[i];
-        printf("BFSWFI2)\n");
-				qptr++;
-				path[pathPtr] = k->vizinhos[i];
-        pathPtr++;
-        printf("BFSWFI3)\n");
-				k->vizinhos[i]->visited = 1;
-        printf("BFSWFI4)\n");
-			}
-		}
-	}
+    if (v != v){
+      pathPtr--;
+      nVisisited --;
+      printf("Retirei\n");
+    }
 
-	return uSinkOut.visited;
 }
