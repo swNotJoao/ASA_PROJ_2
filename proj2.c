@@ -14,10 +14,12 @@ typedef struct vizinho{
 
 typedef struct node{
   unsigned int visited;
+  int used;
   int id;
 
   unsigned int nVizinhos;
   struct vizinho *vizinhos;
+  struct vizinho *nextOnPath;
 }node_t;
 
 void buildGraph();
@@ -66,6 +68,8 @@ int main(){
 
     uSinkIn.vizinhos[uSinkIn.nVizinhos].dest = &uSinkOut;
     uSinkIn.vizinhos[uSinkIn.nVizinhos++].flow++;
+    uSinkIn.used++;
+    uSinkOut.used++;
     uSinkIn.id = -99;
 
     uSinkOut.vizinhos[uSinkOut.nVizinhos].dest = &graphIn[tmpNo];
@@ -82,6 +86,8 @@ int main(){
 
     uSourceIn.vizinhos[uSourceIn.nVizinhos].dest = &uSourceOut;
     uSourceIn.vizinhos[uSourceIn.nVizinhos++].flow++;
+    uSourceIn.used++;
+    uSourceOut.used++;
     uSourceIn.id = -89;
 
     uSourceOut.vizinhos[uSourceOut.nVizinhos].dest = &graphIn[tmpNo];
@@ -96,6 +102,11 @@ int main(){
     graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++].flow = 1;
     graphOut[tmpNo].id = -tmpNo;
 	}
+
+  uSourceIn.used = numCidadaos -1;
+  uSourceOut.used = numCidadaos -1;
+  uSinkIn.used = numSupermercados -1;
+  uSinkOut.used = numSupermercados -1;
 
   printf("%d\n", fordFulkerson());
 
@@ -188,12 +199,12 @@ unsigned int getNodeIndex(int a, int r){
 
 int fordFulkerson(){
 	int maxFlow = 0;
-  path = (vizinho_t **) calloc(graphSize*2, sizeof(vizinho_t*));
+  path = (vizinho_t **) calloc(graphSize*2 + 4, sizeof(vizinho_t*));
 
   /*printf("FORD FULKERSON\n");*/
 
 	while(dfs(&uSourceIn)){
-    /*printf("\n");*/
+    printf("\n");
 		maxFlow++;
 	}
 
@@ -202,6 +213,8 @@ int fordFulkerson(){
 
 int dfs(node_t *node){
   int i;
+  vizinho_t *caminho = NULL;
+
   for(i = 0; i < graphSize; i++){
     graphIn[i].visited = 0;
     graphOut[i].visited = 0;
@@ -216,29 +229,46 @@ int dfs(node_t *node){
   pathPtr = 0;
   dfs_visit(node);
 
-  for(i = 0; i<pathPtr; i++){
-    /*printf("%d\n", path[i]->dest->id);*/
+  /*for(i = 0; i<pathPtr; i++){
+    printf("%d\n", path[i]->dest->id);
     path[i]->flow--;
-  }
+  }*/
 
-  if(uSinkOut.visited)
+  if(uSinkOut.visited){
+    caminho = uSourceIn.nextOnPath;
+    printf("\n");
+    while (caminho->dest != &uSinkOut) {
+      printf("%d->", caminho->dest->id);
+      caminho->flow--;
+      caminho->dest->used--;
+      caminho = caminho->dest->nextOnPath;
+    }
+    printf("%d", caminho->dest->id);
+    printf("\n");
+    caminho->flow--;
+    caminho->dest->used--;
     return 1;
+  }
   return 0;
 }
 
 void dfs_visit(node_t *node){
   int i;
-  /*int flag = 0;*/
-  node->visited = 1;
+  int flag = 0;
 
   for(i = 0; i < node->nVizinhos; i++){
-    /*printf("NO: %d | VIZINHO: %d\n", node->id, node->vizinhos[i].dest->id);*/
+    printf("NO: %d | VIZINHO: %d | FLOW: %d\n", node->id, node->vizinhos[i].dest->id, node->vizinhos[i].flow);
     if(node->vizinhos[i].dest->visited == 0 && node->vizinhos[i].flow > 0){
+      node->vizinhos[i].dest->visited = 1;
       path[pathPtr] = &(node->vizinhos[i]);
       pathPtr++;
+      node->nextOnPath = &(node->vizinhos[i]);
       dfs_visit(node->vizinhos[i].dest);
-      /*flag = 1;*/
-      /*printf("%d|", node->vizinhos[i].dest->id);*/
+      flag = 1;
+      printf("%d|", node->vizinhos[i].dest->id);
       }
     }
+  if (flag == 0){
+    pathPtr--;
+  }
 }
