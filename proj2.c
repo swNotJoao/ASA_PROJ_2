@@ -14,10 +14,10 @@ typedef struct vizinho{
 
 typedef struct node{
   unsigned int visited;
-  int used;
   int id;
 
   unsigned int nVizinhos;
+  struct node *parent;
   struct vizinho *vizinhos;
   struct vizinho *nextOnPath;
 }node_t;
@@ -68,8 +68,6 @@ int main(){
 
     uSinkIn.vizinhos[uSinkIn.nVizinhos].dest = &uSinkOut;
     uSinkIn.vizinhos[uSinkIn.nVizinhos++].flow++;
-    uSinkIn.used++;
-    uSinkOut.used++;
     uSinkIn.id = -99;
 
     uSinkOut.vizinhos[uSinkOut.nVizinhos].dest = &graphIn[tmpNo];
@@ -86,8 +84,6 @@ int main(){
 
     uSourceIn.vizinhos[uSourceIn.nVizinhos].dest = &uSourceOut;
     uSourceIn.vizinhos[uSourceIn.nVizinhos++].flow++;
-    uSourceIn.used++;
-    uSourceOut.used++;
     uSourceIn.id = -89;
 
     uSourceOut.vizinhos[uSourceOut.nVizinhos].dest = &graphIn[tmpNo];
@@ -102,11 +98,6 @@ int main(){
     graphOut[tmpNo].vizinhos[graphOut[tmpNo].nVizinhos++].flow = 1;
     graphOut[tmpNo].id = -tmpNo;
 	}
-
-  uSourceIn.used = numCidadaos -1;
-  uSourceOut.used = numCidadaos -1;
-  uSinkIn.used = numSupermercados -1;
-  uSinkOut.used = numSupermercados -1;
 
   printf("%d\n", fordFulkerson());
 
@@ -213,12 +204,14 @@ int fordFulkerson(){
 
 int dfs(node_t *node){
   int i;
-  vizinho_t *caminho = NULL;
+  node_t *caminho;
+  /*vizinho_t *caminho = NULL;*/
+  node_t *nodetmp;
 
-  for(i = 0; i < graphSize; i++){
+  /*for(i = 0; i < graphSize; i++){
     graphIn[i].visited = 0;
     graphOut[i].visited = 0;
-  }
+  }*/
 
   uSourceIn.visited = 0;
   uSourceOut.visited = 0;
@@ -235,18 +228,37 @@ int dfs(node_t *node){
   }*/
 
   if(uSinkOut.visited){
-    caminho = uSourceIn.nextOnPath;
-    printf("\n");
-    while (caminho->dest != &uSinkOut) {
+    /*caminho = uSourceIn.nextOnPath;*/
+    caminho = uSinkOut.parent;
+    /*printf("\n");*/
+    /*while (caminho->dest != &uSinkOut) {
+      printf("A\n");
+      caminho->dest->visited = 2;
       printf("%d->", caminho->dest->id);
       caminho->flow--;
-      caminho->dest->used--;
+      printf("B\n");
       caminho = caminho->dest->nextOnPath;
+      printf("C\n");
     }
-    printf("%d", caminho->dest->id);
-    printf("\n");
-    caminho->flow--;
-    caminho->dest->used--;
+    printf("%d\n", caminho->dest->id);
+    caminho->flow--;*/
+
+    nodetmp = &uSinkOut;
+    while(nodetmp != &uSourceIn){
+      printf("CAMINHO %d\n", nodetmp->id);
+      nodetmp->visited = 2;
+      nodetmp = caminho;
+      caminho = nodetmp->parent;
+    }
+    printf("CAMINHO %d\n", nodetmp->id);
+
+    for(i = 0; i < graphSize; i++){
+      if(graphIn[i].visited != 2)
+        graphIn[i].visited = 0;
+      if(graphOut[i].visited != 2)
+        graphOut[i].visited = 0;
+    }
+
     return 1;
   }
   return 0;
@@ -255,8 +267,32 @@ int dfs(node_t *node){
 void dfs_visit(node_t *node){
   int i;
   int flag = 0;
+  node_t **queue;
+  node_t *tmp;
+  int queuePtr = 0;
+  int queueEndPtr = 0;
+  queue = (node_t **) calloc(graphSize*2+4, sizeof(node_t *));
 
-  for(i = 0; i < node->nVizinhos; i++){
+  queue[queueEndPtr++] = node;
+
+  while(queue[queuePtr]){
+    tmp = queue[queuePtr++];
+
+    for(i = 0; i < tmp->nVizinhos; i++){
+      if(tmp->vizinhos[i].dest->visited == 0 && tmp->vizinhos[i].flow > 0){
+        printf("NO: %d | VIZINHO: %d | FLOW: %d\n", tmp->id, tmp->vizinhos[i].dest->id, tmp->vizinhos[i].flow);
+        queue[queueEndPtr++] = tmp->vizinhos[i].dest;
+        tmp->vizinhos[i].dest->visited = 1;
+        tmp->vizinhos[i].dest->parent = tmp;
+        printf("%d|", tmp->vizinhos[i].dest->id);
+        if(uSinkOut.visited)
+          return;
+        /*tmp->nextOnPath = &(tmp->vizinhos[i]);*/
+        }
+      }
+  }
+
+  /*for(i = 0; i < node->nVizinhos; i++){
     printf("NO: %d | VIZINHO: %d | FLOW: %d\n", node->id, node->vizinhos[i].dest->id, node->vizinhos[i].flow);
     if(node->vizinhos[i].dest->visited == 0 && node->vizinhos[i].flow > 0){
       node->vizinhos[i].dest->visited = 1;
@@ -270,5 +306,6 @@ void dfs_visit(node_t *node){
     }
   if (flag == 0){
     pathPtr--;
-  }
+  }*/
+  free(queue);
 }
